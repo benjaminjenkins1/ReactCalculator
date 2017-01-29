@@ -1,0 +1,141 @@
+class Calculator extends React.Component{
+	constructor(){
+		super();
+		this.state={
+			mainDisplay:'0',
+			bottomDisplay:'0',
+			currentResult: null,
+		}
+	}
+	renderScreen(){
+		return <Screen mainDisplay={this.state.mainDisplay} bottomDisplay={this.state.bottomDisplay}/>
+	}
+	renderButton(i){
+		return <Button value={i} onClick={()=>{this.handleClick(i)}}/>
+	}
+	handleClick(i){
+		//0-9
+		if((i=='0' || i=='1' || i=='2' || i=='3' || i=='4' || i=='5' || i=='6' || i=='7' || i=='8' || i=='9') && this.state.mainDisplay.indexOf('=') == -1){
+			if(this.state.mainDisplay == '0'){
+				this.setState({mainDisplay: ''});
+				this.setState({mainDisplay: i});
+			}
+			else{
+				this.setState({mainDisplay: this.state.mainDisplay + i});
+			}
+		}
+		//decimal
+		if(i=='.' && this.state.mainDisplay.indexOf('.') == -1 && this.state.mainDisplay.indexOf('=') == -1){
+			this.setState({mainDisplay: this.state.mainDisplay + '.'});
+		}
+		//AC
+		if(i=='AC'){
+			this.setState({mainDisplay: '0', bottomDisplay: '0'});
+		}
+		//CE
+		if(i=='CE'){
+			this.setState({mainDisplay: '0'});
+			var re = /[0-9]/;
+			if(re.test(this.state.bottomDisplay.slice(-1))){
+				 this.setState({bottomDisplay: '0'});
+			}
+		}
+		//+,-,/,*
+		if((i=='/'||i=='+'||i=='*'||i=='-') && (this.state.bottomDisplay !== '0' || this.state.mainDisplay !== '0')){
+			var rex = /[-|+|\/|*]/;
+			if(this.state.mainDisplay.indexOf('=') != -1){
+				this.setState({bottomDisplay: this.state.currentResult + i, mainDisplay: '0'});
+			}
+			else if(rex.test(this.state.bottomDisplay.slice(-1))){
+				this.setState({bottomDisplay: this.state.bottomDisplay.slice(0,-1) + i})
+			}
+			else{
+				var re = /[0-9]/;
+				if(this.state.bottomDisplay == '0'){
+					 this.setState({mainDisplay: '0',bottomDisplay: this.state.mainDisplay + i});
+				}
+				else if(re.test(this.state.bottomDisplay.slice(-1)) || this.state.mainDisplay !== '0'){
+					this.setState({mainDisplay:'0', bottomDisplay: this.state.bottomDisplay + this.state.mainDisplay + i});
+				}
+			}
+		}
+		//equals
+		if(i=='=' && this.state.bottomDisplay !== '0' && this.state.mainDisplay.indexOf('=') == -1){
+			if(this.state.mainDisplay !== '0'){
+				this.setState({bottomDisplay: this.state.bottomDisplay + this.state.mainDisplay});
+			}
+			else{
+				this.setState({bottomDisplay: this.state.bottomDisplay.slice(0,-1)})
+			}
+			var ans = this.state.bottomDisplay + this.state.mainDisplay;
+			this.setState({mainDisplay: '= '+ eval(ans).toString(), currentResult: eval(ans).toString()});
+		}
+	}
+	render(){
+		return (
+			<div className='calculator-body'>
+				<div className="screen">
+					{this.renderScreen()}
+				</div>
+				<div className="button-row">
+					{this.renderButton('AC')}
+					{this.renderButton('CE')}
+				</div>
+				<div className="button-row">
+					{this.renderButton('7')}
+					{this.renderButton('8')}
+					{this.renderButton('9')}
+					{this.renderButton('/')}
+				</div>
+				<div className="button-row">
+					{this.renderButton('4')}
+					{this.renderButton('5')}
+					{this.renderButton('6')}
+					{this.renderButton('*')}
+				</div>
+				<div className="button-row">
+					{this.renderButton('1')}
+					{this.renderButton('2')}
+					{this.renderButton('3')}
+					{this.renderButton('-')}
+				</div>
+				<div className="button-row">
+					{this.renderButton('=')}
+					{this.renderButton('0')}
+					{this.renderButton('.')}
+					{this.renderButton('+')}
+				</div>
+			</div>
+		);
+	}
+}
+
+function Button(props){
+	return (
+		<button className='button btn btn-secondary' onClick={()=>{props.onClick()}}>
+			{props.value}
+		</button>
+	);
+}
+
+function Screen(props){
+	return(
+		<div>
+			<div className='screen-top'>
+				{props.mainDisplay}
+			</div>
+			<div className='screen-bottom'>
+				{props.bottomDisplay}
+			</div>
+		</div>
+	);
+}
+
+function calculate(stringToCalculate){
+	var ans = eval(stringToCalculate).toString();
+	return ans;
+}
+
+ReactDOM.render(
+	<Calculator />, document.getElementById('calculator-container')
+);
